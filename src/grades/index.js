@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { getProfile } from "../services/user";
 import { getGradesById } from "../services/grades";
 import { useState } from "react";
+import store from "store";
 import { useSearchParams } from "react-router-dom";
 const ref = React.createRef();
 
@@ -62,6 +63,7 @@ export default function PDF() {
   };
 
   useEffect(() => {
+    store.set("accessToken", searchParams.get("token"));
     fetchProfile({ semester: "1st" });
     fetchSecondSem({ semester: "2nd" });
   }, []);
