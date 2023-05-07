@@ -127,6 +127,7 @@ export default function StudentList() {
                 {/**cute here */}
 
                 <center style={{ marginTop: "100px" }}>
+                  <h5>STUDENT LIST</h5>
                   <p
                     style={{
                       textAlign: "left",
