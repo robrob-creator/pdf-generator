@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import store from "store";
 import ProgressReport from "./reports";
+import StudentList from "./student_list";
 
 function App() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,6 +22,8 @@ function App() {
         <TeachingLoad />
       ) : searchParams.get("type") === "progress-report" ? (
         <ProgressReport />
+      ) : searchParams.get("type") === "student-list" ? (
+        <StudentList />
       ) : (
         <Grades />
       )}
