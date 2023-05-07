@@ -1,11 +1,10 @@
 /* eslint-disable jsx-a11y/alt-text */
-import React, { createRef } from "react";
+import React from "react";
 import background from "../images/bg.png";
 import header from "../images/logo-title.JPG";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useEffect } from "react";
-import { getProfile } from "../services/user";
 import { getGradesById } from "../services/grades";
 import { useState } from "react";
 import store from "store";
@@ -13,21 +12,22 @@ import { useSearchParams } from "react-router-dom";
 const ref = React.createRef();
 
 export default function PDF() {
-  const [profile, setProfile] = useState();
   const [firstSemGrades, setFirstSemGrades] = useState();
+  const [profile, setProfile] = useState();
   const [secondSemGrades, setSecondSemGrades] = useState();
-  const [expand, setExpand] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const [details, setDetails] = useState();
   const fetchProfile = async (values) => {
     let grade = await getGradesById(searchParams.get("id"), {
       ...values,
     });
+    setDetails(grade?.data?.data?.list[0]);
+    setProfile(grade?.data?.data?.list[0]?.student);
     const grouped = grade?.data?.data?.list?.reduce(
       (catsSoFar, { subject, gradingPeriod, grade, gradedBy }) => {
         if (!catsSoFar[subject.name]) catsSoFar[subject.name] = [];
         catsSoFar[subject.name].push({
-          name: subject.name,
+          code: subject.subject_code,
           gradingPeriod,
           grade,
           gradedBy,
@@ -48,7 +48,7 @@ export default function PDF() {
       (catsSoFar, { subject, gradingPeriod, grade, gradedBy }) => {
         if (!catsSoFar[subject.name]) catsSoFar[subject.name] = [];
         catsSoFar[subject.name].push({
-          name: subject.name,
+          code: subject.subject_code,
           gradingPeriod,
           grade,
           gradedBy,
@@ -67,6 +67,7 @@ export default function PDF() {
     fetchProfile({ semester: "1st" });
     fetchSecondSem({ semester: "2nd" });
   }, []);
+
   const printDocument = () => {
     html2canvas(ref.current, {
       width: 810,
@@ -135,7 +136,6 @@ export default function PDF() {
                   height: "903px",
                   position: "absolute",
                   backgroundRepeat: "no-repeat",
-                  opacity: "60%",
                   backgroundSize: "100%",
                   backgroundImage: `url(${background})`,
                 }}
@@ -143,13 +143,70 @@ export default function PDF() {
                 {/**cute here */}
                 <center style={{ marginTop: "100px" }}>
                   <h5>REPORT ON LEARNING PROGRESS AND ACHIEVEMENT</h5>
-                  <table style={{ color: "black" }}>
+                  <p
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      fontSize: 14,
+                      bottom: 0,
+                    }}
+                  >
+                    Name:{" "}
+                    <span style={{ fontWeight: 600 }}>
+                      {profile?.firstName ?? ""} {profile?.lastName ?? ""}
+                    </span>
+                  </p>
+                  <p
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      fontSize: 14,
+                      bottom: 0,
+                    }}
+                  >
+                    Year and Section:{""}
+                    <span style={{ fontWeight: 600 }}>
+                      {profile?.gradeLevel ?? ""}
+                    </span>
+                  </p>
+                  <p
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      fontSize: 14,
+                      bottom: 0,
+                    }}
+                  >
+                    Strand/Track:{" "}
+                    <span style={{ fontWeight: 600 }}>
+                      {profile?.strand_track ?? ""}
+                    </span>
+                  </p>
+                  <p
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      fontSize: 14,
+                      bottom: 0,
+                    }}
+                  >
+                    School Year:{" "}
+                    <span style={{ fontWeight: 600 }}>
+                      {details?.schoolYear ?? ""}
+                    </span>
+                  </p>
+                  <h5
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      bottom: 0,
+                    }}
+                  >
+                    1st Semester
+                  </h5>
+                  <table style={{ color: "black", top: 0 }}>
                     <tr>
-                      <th>Learning Areas</th>
-                      <th>1st Semester</th>
-                    </tr>
-                    <tr>
-                      <th>Subjects</th>
+                      <th>Subject Code</th>
                       <th>Midterm</th>
                       <th>Final</th>
                     </tr>
@@ -158,15 +215,18 @@ export default function PDF() {
                       firstSemGrades.map((item, index) => {
                         return (
                           <tr>
-                            <td> {item[0] && item[0]?.name}</td>
-                            <td>
+                            <td style={{ textAlign: "center", color: "black" }}>
+                              {" "}
+                              {item[0] && item[0]?.code}
+                            </td>
+                            <td style={{ textAlign: "center" }}>
                               {item[0]
                                 ? item.filter(
                                     (i) => i?.gradingPeriod === "1st"
                                   )[0]?.grade
                                 : "0"}
                             </td>
-                            <td>
+                            <td style={{ textAlign: "center" }}>
                               {item[0]
                                 ? item.filter(
                                     (i) => i?.gradingPeriod === "2nd"
@@ -179,14 +239,19 @@ export default function PDF() {
                   </table>
                 </center>
 
-                <center>
-                  <table style={{ marginTop: "20px" }}>
+                <center style={{ marginTop: "20px" }}>
+                  <h5
+                    style={{
+                      textAlign: "left",
+                      marginLeft: 80,
+                      bottom: 0,
+                    }}
+                  >
+                    2nd Semester
+                  </h5>
+                  <table>
                     <tr>
-                      <th>Learning Areas</th>
-                      <th>2nd Semester</th>
-                    </tr>
-                    <tr>
-                      <th>Subjects</th>
+                      <th>Subject Code</th>
                       <th>Midterm</th>
                       <th>Final</th>
                     </tr>
@@ -195,15 +260,18 @@ export default function PDF() {
                       secondSemGrades.map((item, index) => {
                         return (
                           <tr>
-                            <td> {item[0] && item[0]?.name}</td>
-                            <td>
+                            <td style={{ textAlign: "center" }}>
+                              {" "}
+                              {item[0] && item[0]?.code}
+                            </td>
+                            <td style={{ textAlign: "center" }}>
                               {item[0]
                                 ? item.filter(
                                     (i) => i?.gradingPeriod === "1st"
                                   )[0]?.grade
                                 : "0"}
                             </td>
-                            <td>
+                            <td style={{ textAlign: "center" }}>
                               {item[0]
                                 ? item.filter(
                                     (i) => i?.gradingPeriod === "2nd"
